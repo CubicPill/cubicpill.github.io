@@ -5,6 +5,8 @@ titles:
   zh: 友情链接
   zh-Hans: 友情链接
   zh-Hant: 友情鏈結
+comment: false
+key: page-link
 ---
 
 这是友情链接页面

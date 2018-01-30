@@ -77,9 +77,9 @@ ga_tracking_id:  UA-106459899-1 #Google analytics id for the site
 
 ## Reading quantity (LeanCloud) ##
 leancloud:
-  # app_id:  #LeanCloud App id
-  # app_key:  #LeanCloud App key
-  # app_class:  #LeanCloud App class
+  app_id:  0j0w6AxTKYOETjx7UuEkMYtN-gzGzoHsz
+  app_key:  zxcCLHUtazGLVCc5BFLWBOdU
+  app_class:  blog_statistic
 
 mathjax: true
 
