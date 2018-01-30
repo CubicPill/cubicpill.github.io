@@ -25,7 +25,13 @@ nav_lists:
       zh-Hans: 关于
       zh-Hant: 關於
     url: /about.html
-
+  - titles:
+      en: Links
+      zh: 友情链接
+      zh-Hans: 友情链接
+      zh-Hant: 友情鏈結
+    url: /link.html
+    
 paths:
    base: /
    home: /

@@ -39,7 +39,9 @@
         {%- assign href = __return -%}
         {%- assign __locale = list.titles -%}
         {%- include snippets/locale-to-string.html -%}
-        <li><a href="{{ href }}">{%- if list.title -%}{{ list.title }}{%- else -%}{{ __return }}{%- endif -%}</a></li>
+        <li>
+            <a href="{{ href }}">{%- if list.title -%}{{ list.title }}{%- else -%}{{ __return }}{%- endif -%}</a>
+        </li>
       {%- endfor -%}
       {%- if site.paths.rss -%}
         {%- assign __path = site.paths.rss -%}
