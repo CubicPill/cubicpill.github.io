@@ -42,7 +42,7 @@ timezone: Asia/Shanghai #see https://en.wikipedia.org/wiki/List_of_tz_database_t
 
 ## Author & social ##
 author:
-  name: Someone
+  name: CubicPill
   email:  cubicpill@gmail.com #your Email address e.g. someone@site.com
   # facebook:  #your Facebook username
   twitter: cubicpill #your Twitter username
@@ -75,7 +75,7 @@ leancloud:
   # app_key:  #LeanCloud App key
   # app_class:  #LeanCloud App class
 
-# mathjax: true
+mathjax: true
 
 ## Paginate ##
 paginate: 5
@@ -83,7 +83,7 @@ paginate_path: /blog/page:num
 
 ## Post excerpts ##
 excerpt_separator: <!--more-->
-excerpt_type: text # text | html
+excerpt_type: html # text | html
 
 ## Build ##
 markdown: kramdown
