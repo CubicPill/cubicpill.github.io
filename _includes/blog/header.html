@@ -8,9 +8,6 @@
   {%- if site.title -%}
     <a class="site-title" title="{%- if site.description -%}{{ site.description }}{%- endif -%}" href="{{ __return }}">{{ site.title }}</a>
   {%- endif -%}
-  <div class="site-logo">
-    {%- include logo/logo.svg -%}
-  </div>
   <nav>
     <ul class="inline-list">
       {%- if site.paths.home -%}

@@ -12,7 +12,7 @@
 #    `--'   `----''--'   '--' `--'
 
 ## Base settings ##
-# url:  #the base hostname & protocol for your site e.g. https://www.someone.com
+url: https://cubicpill.me  #the base hostname & protocol for your site e.g. 
 baseurl: /
 title: Cubic Zone
 description: > #this means to ignore newlines until "nav_lists:"
@@ -54,7 +54,7 @@ author:
 
 ## Comment system (Disqus) ##
 disqus:
-  shortname: cubicpill.disqus.com  #the Disqus shortname for the site
+  shortname: cubicpill  #the Disqus shortname for the site
 
 ## Comment system (gitalk) ##
 # please refer to https://github.com/gitalk/gitalk for more info.
