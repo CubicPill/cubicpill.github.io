@@ -7,10 +7,14 @@ key: 2018-03-21-wr703n-probing-device
 本篇文章将会讲解如何将这台路由器改造成一个带探针功能的路由器. 所谓探针, 就是可以收集附近开启了 Wi-Fi 的设备的 MAC 地址和信号强度等信息的设备 (主要通过 probe 帧). 通过收集和分析这些数据, 我们可以得知附近的设备数量, 或者使用多台探针设备配合使用记录设备的轨迹.
 <!--more-->
 ## Wi-Fi 探针简介
-设备获取周围的 Wi-Fi 基站列表有两种方法: 第一种方式是通过解析 AP 发出的 Beacon frame 得知附近 AP 的存在 (被动方式), 另一种方式 (主动方式) 则是客户端主动发送 Probe request, AP 接收到 Probe request 帧后向客户端回复 Probe response, 从而完成 AP 的发现过程.
+设备获取周围的 Wi-Fi 基站列表有两种方法: 第一种方式是通过解析 AP 发出的 Beacon frame 得知附近 AP 的存在 (被动方式), 另一种方式 (主动方式) 则是客户端主动发送 Probe request, AP 接收到 Probe request 帧后向客户端回复 Probe response, 从而完成 AP 的发现过程.      
+在设备的 Wi-Fi 处于开启状态时, 设备将会不断广播 Probe 帧以探测周围的热点. 即使已经连接到了某个 AP, 设备仍会定期发送 probe 帧, 只是频率会稍有降低. 通过一台设置为监听模式的无线网卡设备, 我们可以捕捉到这些设备广播的 Probe 帧.     
 
-## 未完待续
+## 使用 libpcap 抓取无线网帧
 
+## 使用 library-radiotap 解析 RadioTap 头
+
+## 在 TL-WR703N 上部署监听程序
 
 loader.sh
 ```shell
@@ -40,3 +44,7 @@ export LD_LIBRARY_PATH=/tmp:$LD_LIBRARY_PATH
  echo "dnsmasq:*:0:0:99999:7:::" >> /etc/shadow
  chown dnsmasq.dnsmasq /usr/sbin/dnsmasq
  ```
+
+## 未完待续
+
+
