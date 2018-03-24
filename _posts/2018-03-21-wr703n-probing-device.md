@@ -13,10 +13,19 @@ key: 2018-03-21-wr703n-probing-device
 ## 使用 libpcap 抓取无线网帧
 
 ## 使用 library-radiotap 解析 RadioTap 头
-
+我们所需要的信息有两个: 接收到的信号强度和发送方的 MAC 地址.    
 ## 在 TL-WR703N 上部署监听程序
-
-loader.sh
+在配置多 SSID 时, dnsmasq 可能会报错找不到用户 dnsmasq.dnsmasq, 运行如下命令即可:    
+```shell
+ echo "dnsmasq:*:453:dnsmasq" >> /etc/group
+ echo "dnsmasq:*:453:453:dnsmasq:/var:/bin/false" >> /etc/passwd
+ echo "dnsmasq:*:0:0:99999:7:::" >> /etc/shadow
+ chown dnsmasq.dnsmasq /usr/sbin/dnsmasq
+ ```
+ 
+因为 TL-WR703N 只有 4M 的 Flash 存储, 而 OpenWrt+LuCI 总共占用的空间约 3.5M, 没有足够的空间存储我们的监控程序. 因此, 只有曲线救国, 写一个脚本在每一次路由器启动时从服务器动态拉取程序     
+最后经过考虑, 决定先用一个脚本从服务器上获取另外一个脚本并执行, 在第二个脚本中编写获取 Probe 帧捕获程序的命令.     
+首先是第一个加载程序 ```loader.sh```      
 ```shell
 #!/bin/sh
 cd /tmp
@@ -24,8 +33,9 @@ wget -q <url of your init.sh>
 chmod +x ./init.sh
 ./init.sh
 ```
+拉取 init.sh 并执行     
 
-init.sh
+```init.sh```
 ```shell
 #!/bin/sh
 cd /tmp
@@ -38,12 +48,7 @@ export LD_LIBRARY_PATH=/tmp:$LD_LIBRARY_PATH
 
 ```
 
-```shell
- echo "dnsmasq:*:453:dnsmasq" >> /etc/group
- echo "dnsmasq:*:453:453:dnsmasq:/var:/bin/false" >> /etc/passwd
- echo "dnsmasq:*:0:0:99999:7:::" >> /etc/shadow
- chown dnsmasq.dnsmasq /usr/sbin/dnsmasq
- ```
+
 
 ## 未完待续
 
