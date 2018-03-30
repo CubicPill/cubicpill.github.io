@@ -11,7 +11,32 @@ key: 2018-03-21-wr703n-probing-device
 在设备的 Wi-Fi 处于开启状态时, 设备将会不断广播 Probe 帧以探测周围的热点. 即使已经连接到了某个 AP, 设备仍会定期发送 probe 帧, 只是频率会稍有降低. 通过一台设置为监听模式的无线网卡设备, 我们可以捕捉到这些设备广播的 Probe 帧.     
 
 ## 使用 libpcap 抓取无线网帧
+谈到抓包, 就不得不提到大名鼎鼎的 libpcap. libpcap 是 [tcpdump](https://www.tcpdump.org/) 的底层库,被广泛应用在 *nix 系统下的抓包应用中, 在 Windows 下它的名字叫 WinPcap (wpcap). 它的功能主要有: 抓包, 构造原始数据包 (raw packets) 并发送, 流量统计和包过滤.      
+libpcap 主要采用旁路方式抓包, 当数据包到达网卡时, libpcap 从链路层驱动中获取数据包的内容, 将其发给过滤器, 然后传递到用户缓冲区. 可以设置一个回调函数, 这样在每个数据包被抓取到后, 都会自动调用回调函数进行处理.     
 
+用 libpcap 抓包, 主要分为以下几个步骤:    
+1. 用 ```pcap_open_live()``` 函数打开网络接口设备
+2. ```pcap_compile()``` 函数编译过滤规则
+3. ```pcap_setfilter()``` 函数应用过滤规则到过滤器
+4. 设置回调函数, 并开始监听数据包
+5. 监听程序退出时, 记得关闭接口, 使用 ```pcap_close()```
+下面的代码演示了 1-3 步:    
+```
+if ((adhandle = pcap_open_live(args.interface, 65536, 1, 1000, errbuf)) == NULL) {
+    fprintf(stderr, "Unable to open the adapter %s: %s\n", args.interface, errbuf);
+    return 1;
+} // 打开设备
+
+if (pcap_compile(adhandle, &filter, filter_string, 1, PCAP_NETMASK_UNKNOWN) == -1) {
+    pcap_perror(adhandle, "pcap_compile error: ");
+    return 1;
+} // 编译规则
+
+if (pcap_setfilter(adhandle, &filter) == -1) {
+    pcap_perror(adhandle, "pcap_setfilter error: ");
+    return 1;
+} // 应用规则
+```
 ## 使用 library-radiotap 解析 RadioTap 头
 我们所需要的信息有两个: 接收到的信号强度和发送方的 MAC 地址.    
 ## 在 TL-WR703N 上部署监听程序
