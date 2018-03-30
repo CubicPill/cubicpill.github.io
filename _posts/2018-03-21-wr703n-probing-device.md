@@ -20,7 +20,8 @@ libpcap 主要采用旁路方式抓包, 当数据包到达网卡时, libpcap 从
 3. ```pcap_setfilter()``` 函数应用过滤规则到过滤器
 4. 设置回调函数, 并开始监听数据包
 5. 监听程序退出时, 记得关闭接口, 使用 ```pcap_close()```
-下面的代码演示了 1-3 步:    
+
+下面的代码演示了 1-3 步:     
 ```
 if ((adhandle = pcap_open_live(args.interface, 65536, 1, 1000, errbuf)) == NULL) {
     fprintf(stderr, "Unable to open the adapter %s: %s\n", args.interface, errbuf);
@@ -37,6 +38,7 @@ if (pcap_setfilter(adhandle, &filter) == -1) {
     return 1;
 } // 应用规则
 ```
+
 ## 使用 library-radiotap 解析 RadioTap 头
 我们所需要的信息有两个: 接收到的信号强度和发送方的 MAC 地址.    
 ## 在 TL-WR703N 上部署监听程序
