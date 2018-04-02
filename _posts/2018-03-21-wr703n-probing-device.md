@@ -43,6 +43,18 @@ if (pcap_setfilter(adhandle, &filter) == -1) {
 
 ## 使用 library-radiotap 解析 RadioTap 头
 在利用 libpcap 抓取到我们所需要的数据报文之后, 接下来就是解析提取这些报文中所包含的信息. 我们所需要的信息有两个: 接收到的信号强度和发送方的 MAC 地址.     
+RadioTap 头是 IEEE 802.11 网帧注入和接收事实上的标准, 被很多系统所支持. 它的长度和字段都是不固定的, 具体包含的字段可以在一个叫做 ```present``` 的字段中找到. 这个字段通常有 4 bytes (32 bits) 长, 根据不同比特位的数值不同, 规定了在接下来的数据区域会有哪些字段的值出现. 具体的定义可以在[这里](https://www.radiotap.org/) 查到. 
+在 C 语言中, 它的结构体定义如下:
+```
+struct ieee80211_radiotap_header {
+        u_int8_t        it_version;     /* set to 0 */
+        u_int8_t        it_pad;
+        u_int16_t       it_len;         /* entire length */
+        u_int32_t       it_present;     /* fields present */
+} __attribute__((__packed__));
+```
+RadioTap 头的解析器已经有现成的轮子可以使用, 叫做 [radiotap-library](https://github.com/radiotap/radiotap-library)    
+
 ## 在 TL-WR703N 上部署监听程序
 写完监听程序之后, 下一步就是在路由器上部署监听程序
 ### 设置多 SSID
