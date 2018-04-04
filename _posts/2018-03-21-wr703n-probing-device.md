@@ -53,7 +53,42 @@ struct ieee80211_radiotap_header {
         u_int32_t       it_present;     /* fields present */
 } __attribute__((__packed__));
 ```
-RadioTap 头的解析器已经有现成的轮子可以使用, 叫做 [radiotap-library](https://github.com/radiotap/radiotap-library)    
+RadioTap 头的解析器已经有现成的轮子可以使用, 叫做 [radiotap-library](https://github.com/radiotap/radiotap-library)      
+在监听程序中, 我们需要的字段只有 ```RSSI```    
+代码如下:
+```
+// definition of struct frame_info
+typedef struct frame_info {
+    signed char ssi_signal_dBm;
+    time_t timestamp;
+    unsigned char src_mac[6];
+    unsigned char dst_mac[6];
+} frame_info;
+
+// parsing function
+int parse_frame(const u_char *data, size_t len, struct frame_info *f) {
+    struct ieee80211_radiotap_iterator iter;
+    int err = 0;
+    uint16_t radiotap_len = (data[0x3] << 8) | data[0x2];
+    memcpy(f->src_mac, data + radiotap_len + 0xa, 6);
+    memcpy(f->dst_mac, data + radiotap_len + 0x4, 6);
+
+    err = ieee80211_radiotap_iterator_init(&iter, (struct ieee80211_radiotap_header *) data, len, NULL);
+    if (err) {
+        return 0;
+    }
+    while (!(err = ieee80211_radiotap_iterator_next(&iter))) {
+        if (iter.is_radiotap_ns) {
+            if (iter.this_arg_index == IEEE80211_RADIOTAP_DBM_ANTSIGNAL && !f->ssi_signal_dBm) {
+                f->ssi_signal_dBm = *(signed char *) iter.this_arg;
+            }
+        }
+
+    }
+
+    return 1;
+}
+```
 
 ## 在 TL-WR703N 上部署监听程序
 写完监听程序之后, 下一步就是在路由器上部署监听程序
