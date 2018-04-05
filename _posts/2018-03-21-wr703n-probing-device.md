@@ -10,7 +10,8 @@ key: 2018-03-21-wr703n-probing-device
 设备获取周围的 Wi-Fi 基站列表有两种方法: 第一种方式是通过解析 AP 发出的 Beacon frame 得知附近 AP 的存在 (被动方式), 另一种方式 (主动方式) 则是客户端主动发送 Probe request, AP 接收到 Probe request 帧后向客户端回复 Probe response, 从而完成 AP 的发现过程.      
 在设备的 Wi-Fi 处于开启状态时, 设备将会不断广播 Probe 帧以探测周围的热点. 即使已经连接到了某个 AP, 设备仍会定期发送 probe 帧, 只是频率会稍有降低. 通过一台设置为监听模式的无线网卡设备, 我们可以捕捉到这些设备广播的 Probe 帧.     
 
-## 使用 libpcap 抓取无线网帧
+## 编写监听程序
+### 使用 libpcap 抓取无线网帧
 谈到抓包, 就不得不提到大名鼎鼎的 libpcap. libpcap 是 [tcpdump](https://www.tcpdump.org/) 的底层库,被广泛应用在 *nix 系统下的抓包应用中, 在 Windows 下它的名字叫 WinPcap (wpcap). 它的功能主要有: 抓包, 构造原始数据包 (raw packets) 并发送, 流量统计和包过滤.      
 libpcap 主要采用旁路方式抓包, 当数据包到达网卡时, libpcap 从链路层驱动中获取数据包的内容, 将其发给过滤器, 然后传递到用户缓冲区. 可以设置一个回调函数, 这样在每个数据包被抓取到后, 都会自动调用回调函数进行处理.     
 
@@ -41,7 +42,7 @@ if (pcap_setfilter(adhandle, &filter) == -1) {
 
 ```
 
-## 使用 library-radiotap 解析 RadioTap 头
+### 使用 library-radiotap 解析 RadioTap 头
 在利用 libpcap 抓取到我们所需要的数据报文之后, 接下来就是解析提取这些报文中所包含的信息. 我们所需要的信息有两个: 接收到的信号强度和发送方的 MAC 地址.     
 RadioTap 头是 IEEE 802.11 网帧注入和接收事实上的标准, 被很多系统所支持. 它的长度和字段都是不固定的, 具体包含的字段可以在一个叫做 ```present``` 的字段中找到. 这个字段通常有 4 bytes (32 bits) 长, 根据不同比特位的数值不同, 规定了在接下来的数据区域会有哪些字段的值出现. 具体的定义可以在[这里](https://www.radiotap.org/) 查到. 
 在 C 语言中, 它的结构体定义如下:
@@ -89,10 +90,24 @@ int parse_frame(const u_char *data, size_t len, struct frame_info *f) {
     return 1;
 }
 ```
-
+### 组合
+最终收集到数据后, 我们可以通过 UDP 协议将数据包发回服务器, 可以将其输出到本地文件中, 同时我们也希望程序可以有一些命令行选项可供配置. 由于这部分内容与抓包部分没有很大关联, 在此不再赘述.     
+完整代码可以参考 [https://github.com/CubicPill/probe_frame_capture](https://github.com/CubicPill/probe_frame_capture)
 ## 在 TL-WR703N 上部署监听程序
-写完监听程序之后, 下一步就是在路由器上部署监听程序
-### 设置多 SSID
+写完监听程序之后, 下一步就是在路由器上部署监听程序. TL-WR703N 所用的芯片是 MIPS 架构, 所以我们需要 MIPS 的交叉编译器来编译最终的可执行程序.
+首先, 到 OpenWrt 官方网站下载交叉编译工具链(x86 平台): [https://downloads.lede-project.org/releases/17.01.4/targets/ar71xx/generic/](https://downloads.lede-project.org/releases/17.01.4/targets/ar71xx/generic/)       
+在页面最下方可以找到 Supplementary Files, 下载 SDK 压缩包.         
+具体的编译步骤可以参考 repo 的 [REAMDE 文档](https://github.com/CubicPill/probe_frame_capture/blob/master/README.md)    
+
+### 设置监听接口
+由于我们需要在监听的同时保留路由器的上网功能, 所以有必要为路由器设置多个无线接口, 保留原有接口的同时, 新建一个接口 ```mon0``` 提供给监听程序.    
+从 Network 选项卡中选择 Wireless, 再点击 add        
+Interface Configuration 中, ESSID 可以不填, Mode 改为 Monitor, Network 不要勾选.     
+![](\content\images\2018\wr703n_probe_device\monitor-1.png)
+
+
+Advanced Settings 中, 将新接口命名为 ```mon0``` 
+![](\content\images\2018\wr703n_probe_device\monitor-2.png)
 
 
 在配置多 SSID 时, dnsmasq 可能会报错找不到用户 dnsmasq.dnsmasq, 运行如下命令即可:    
@@ -130,9 +145,11 @@ export LD_LIBRARY_PATH=/tmp:$LD_LIBRARY_PATH
 ./probe_frame_capture mon0 127.0.0.1 8888 > /dev/null
 
 ```
+这样就完成了程序的部署, 现在可以在指定远程服务器的对应端口上接收到路由器发回的数据了.    
+
+## TODO
+目前这个程序只完成了基本的功能, 还有一些欠缺的地方, 比如只能监听单个频道, 发送的数据为明文等等. 以及, 在设备密集的场所, 每秒钟将会监听到数百个数据包, 这对远端服务器无疑是不小的负担( 可能同时有几十上百个路由器向服务器发送数据), 也可能会拖慢路由器的网速. 下一步可能会将一小段时间内内单个设备所发送的 probe 帧进行合并, 合并后的数据再回传服务器.
 
 
-
-## 未完待续
 
 
