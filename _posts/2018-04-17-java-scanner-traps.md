@@ -8,7 +8,34 @@ key: 2018-04-17-java-scanner-traps
 
 <!--more-->
 ## 坑1: 为什么我的输入只有行内开始的一个数, 后面的数都不见了？
-
+```java
+import java.util.Scanner;
+public class ScannerTrap1{
+    
+    public static void testInputMultiple(){
+        System.out.println("Input:");
+        Scanner s =new Scanner(System.in);
+        
+        int a=s.nextInt();
+        int b=s.nextInt();
+        
+        System.out.printf("I get: %d, %d\n",a,b);
+    }
+    public static void testInputMultipleWrong(){
+        System.out.println("Input:");
+        Scanner s1 =new Scanner(System.in);
+        Scanner s2 =new Scanner(System.in);
+        int a=s1.nextInt();
+        int b=s2.nextInt();
+        
+        System.out.printf("I get: %d, %d\n",a,b);
+    }
+    public static void main(String args[]){
+        testInputMultiple();
+        testInputMultipleWrong();
+    }
+}
+```
 这通常是由于重复创建了多个 Scanner 导致的. Scanner 被创建时, 会 
 ![](\content\images\2018\java_scanner\scanner_fig1.png)
 ![](\content\images\2018\java_scanner\scanner_fig2.png)
