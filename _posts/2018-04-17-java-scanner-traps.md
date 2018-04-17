@@ -5,9 +5,15 @@ key: 2018-04-17-java-scanner-traps
 
 ---       
 本文是为 2018 春季 Java A 课程的同学们所写的教程, 会结合一些在课堂中碰到的案例进行说明.    
-在 Java 中, 我们经常使用 ```Scanner``` 类来获取用户输入, 但是有些时候会遇到一些奇怪的问题. 本文整理了一下在批改作业中遇到的例子和同学们的疑问, 希望可以帮助同学们加深对 Scanner 背后机制的理解.    
+在 Java 中, 我们经常使用 ```Scanner``` 类来获取用户输入, 但是有些时候会遇到一些奇怪的问题. 本文整理了一下在批改作业中遇到的例子和同学们的疑问并做出了解释, 希望可以帮助同学们加深对 Scanner 背后机制的理解.    
 <!--more-->
+## 阅读此文前, 你需要:
+1. 了解 Scanner 的基本用法, 清楚 ```nextLine()```, ```nextInt()``` 等函数的用法与区别.    
+2. 了解有关 ```stdin``` 和 ```stdout``` 的[基本概念](https://en.wikipedia.org/wiki/Standard_streams), 以及对[输入输出重定向](https://en.wikipedia.org/wiki/Redirection_(computing))的基本了解.    
+3. 善用搜索引擎查找不了解的相关知识.
+
 ## 坑1: 为什么我的输入只有行内开始的一个数, 后面的数都不见了？
+### 示例
 下面的代码中, ```testInputMultiple()``` 是我们从用户输入获取两个整数的常用做法. 而```testInputMultipleWrong()``` 函数是在批改作业过程中发现的一些同学的写法. 这种写法可能在某些情况下不会出现问题 (如果每输入一个数字就按下回车的话), 但在同一行内连续按空格分割输入的时候, 就会出现一些问题.
 ```java
 import java.util.Scanner;
@@ -41,7 +47,7 @@ public class ScannerTrap1{
 切换成重定向测试一下, 这次程序直接抛出了 ```NoSuchElementException```.    
 
 ![](\content\images\2018\java_scanner\console_trap1.png)
-
+### 原因探究
 观察两个函数的差别, 仅仅是因为第二个函数重复创建了多个 Scanner ,导致了错误的产生. 原因在于 Scanner 的 ```nextInt()``` 函数被调用时, 会从标准输入的缓冲区内读取数据并存入自己的存储区域, 然后提取出这一行中的第一个整数, 并作为函数的返回值返回.     
 下面的图表示了我们使用 Scanner 的一般过程: ```Scanner``` 对象从 ```System.in``` 流中读取数据, 并放入自己的缓冲区, 等待被其他代码调用返回.    
 ![](\content\images\2018\java_scanner\scanner_fig1.png)
@@ -49,9 +55,11 @@ public class ScannerTrap1{
  在上面的示例中, 由于我们使用了两个 ```Scanner``` 对象读取数据, ```1 3``` 一行实际上被 ```s1``` 全部取走, 并留在 ```s1``` 的缓冲区内. 因此在接受用户输入的时候, ```4``` 的一行才是真正被 ```s2``` 所接收到的数据. 在重定向之时, 因为输入在两行之后已经结束, 因此 ```s2``` 的 ```nextInt()``` 函数无法读取任何数据, 就会产生 ```NoSuchElementException``` 异常.    
 
 ![](\content\images\2018\java_scanner\scanner_fig2.png)
-
-解决方案: 只用一个 Scanner 对象接收标准输入, 不要重复创建.    
+### 解决方案
+只用一个 Scanner 对象接收标准输入, 不要重复创建.    
 ## 坑2: 为什么只关闭了一个 Scanner, 其余的 Scanner 都不能用了?
+### 示例
+下面的代码中, 我们创建了两个 ```Scanner``` 对象. 其中 ```s1``` 在接收到一个整数之后, 我们将其关闭. 按照一般的经验来说, s2 应当不受影响. 但是当我们运行这段代码时, 却出现了异常:    
 ```java
 import java.util.Scanner;
 public class ScannerTrap2{
@@ -70,10 +78,25 @@ public class ScannerTrap2{
     }
 }
 ```
+
 ![](\content\images\2018\java_scanner\console_trap2.png)
+
+抛出了 ```NoSuchElementException```. 但是我们还没有输入, ```s2``` 也未被关闭, 为什么会出现这种情况呢?    
+### 原因探究    
+
+通常我们在使用完输入流这一类资源之后, 为了释放资源供其他程序使用, 我们需要调用 ```close()``` 函数. 但是, 在调用 Scanner 的 ```close()``` 函数时, Scanner 也会自动调用它所读取的输入流的 ```close()``` 函数. 也就是说, ```System.in``` 流会随着 ```s1``` 的关闭而被关闭. 下图演示了这一过程: s1 被关闭, 在关闭的过程中也调用了 ```System.in``` 的关闭函数.    
+
 ![](\content\images\2018\java_scanner\scanner_fig3.png)
+
+所以, 当我们调用 ```s2``` 的 ```nextInt()``` 方法时, 由于 ```System.in``` 早已被关闭, 因此 ```s2``` 无法读取到任何用户的输入数据, 而是直接抛出异常:    
+
 ![](\content\images\2018\java_scanner\scanner_fig4.png)
+
+### 解决方案
+在确认完全不会使用 Scanner 所用的输入流之后, 再关闭 Scanner.    
 ## 坑3: 为什么没有关闭 Scanner, 但新的 Scanner 也会报错?
+### 示例
+在下面的代码中, 我们从重定向的文件内接收输入. 文件内有两行, 分别对应着两次 ```nextLine()``` 的输出. 
 ```java
 import java.util.Scanner;
 public class Main{
@@ -91,10 +114,15 @@ public class Main{
     }
 }
 ```
+运行代码, 第一次对 ```testInput()``` 的调用看起来没有问题, 但第二次的调用却又抛出了 ```NoSuchElementException``` 异常.
 ![](\content\images\2018\java_scanner\console_trap3.png)
+### 原因探究
+产生这种错误的原因和第一种情况很相似, 但又有些许的不同.     
 
-
-
+我们知道, 标准输入不仅仅可以接受用户键盘的输入, 还可以通过重定向的方式, 将文件或其他进程的输出作为程序的标准输入. 如图所示:    
 ![](\content\images\2018\java_scanner\scanner_fig5.png)
+
+
 ![](\content\images\2018\java_scanner\scanner_fig6.png)
 ![](\content\images\2018\java_scanner\scanner_fig7.png)
+### 解决方案
