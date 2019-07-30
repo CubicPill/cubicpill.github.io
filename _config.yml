@@ -51,7 +51,7 @@ author:
   name: CubicPill
   email:  cubicpill@gmail.com #your Email address e.g. someone@site.com
   # facebook:  #your Facebook username
-  twitter: cubicpill #your Twitter username
+  # twitter: #your Twitter username
   github: cubicpill  #your GitHub username
   # googleplus:  #your Google+ username
   # weibo:  #your Weibo username
@@ -76,10 +76,10 @@ gitalk:
 ga_tracking_id:  UA-106459899-1 #Google analytics id for the site
 
 ## Reading quantity (LeanCloud) ##
-leancloud:
-  app_id:  0j0w6AxTKYOETjx7UuEkMYtN-gzGzoHsz
-  app_key:  zxcCLHUtazGLVCc5BFLWBOdU
-  app_class:  blog_statistic
+#leancloud:
+#  app_id:  0j0w6AxTKYOETjx7UuEkMYtN-gzGzoHsz
+#  app_key:  zxcCLHUtazGLVCc5BFLWBOdU
+#  app_class:  blog_statistic
 
 mathjax: true
 
