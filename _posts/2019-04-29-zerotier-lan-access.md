@@ -35,6 +35,16 @@ sysctl -w net.ipv4.ip_forward=1
 
 然后就可以通过 ZeroTier 访问内网中的其他机器了
 
+对于 IPv6, 需要使用 `ip6tables` 和改变 `sysctl.conf` 中相应的设置
+
+```bash
+ip6tables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+ip6tables -A FORWARD -i eth0 -o ztbtotfrd7 -m state --state RELATED,ESTABLISHED -j ACCEPT
+ip6tables -A FORWARD -i ztbtotfrd7 -o eth0 -j ACCEPT
+
+sysctl -w net.ipv6.conf.all.forwarding=1
+```
+
 ### References
 
 [ZeroTier Knowledgebase](https://zerotier.atlassian.net/wiki/spaces/SD/overview)
